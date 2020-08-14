@@ -1,0 +1,38 @@
+  
+version: 2.1
+jobs:
+  build:
+    working_directory: ~/public
+    docker:
+      - image: circleci/node:10.15.3
+      - image: circleci/mysql:5.7-ram
+    steps:
+      - checkout
+      - run:
+          name: update-npm
+          command: "sudo npm install -g npm@latest"
+      - restore_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: install-npm-wee
+          command: npm install
+      - save_cache:
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run:
+          name: test
+          command: npm test
+
+            # prepare the database
+      - run: mysqladmin create test --user="root" --password=""
+      - run: php artisan migrate --env=testing --force
+
+      - store_artifacts:
+          path: test-results.xml
+          
+      - store_artifacts:
+          path: coverage
+         
+      - store_test_results:
+          path: test-results.xml
