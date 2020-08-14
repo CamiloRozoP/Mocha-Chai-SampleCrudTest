@@ -5,7 +5,17 @@ jobs:
     working_directory: ~/public
     docker:
       - image: circleci/node:10.15.3
-      - image: circleci/mysql:5.7-ram
+      -     image: mysql:latest
+    volumes:
+      - "./.mysql-data/db:/var/lib/mysql"
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_DATABASE: node20_mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ""
     steps:
       - checkout
       - run:
@@ -23,10 +33,6 @@ jobs:
       - run:
           name: test
           command: npm test
-
-            # prepare the database
-      - run: mysqladmin create test --user="root" --password=""
-      - run: php artisan migrate --env=testing --force
 
       - store_artifacts:
           path: test-results.xml
